@@ -10,9 +10,10 @@ import {
 const router = express.Router();
 
 router.post("/strings", analyzeString);
-router.get("/strings/:string_value", getStringByValue);
 router.get("/strings", getAllStrings);
-router.delete("/strings/:string_value", deleteStringByValue);
 router.get("/strings/filter-by-natural-language", filterByNaturalLanguage);
+router.get("/strings/:string_value", getStringByValue);
+router.delete("/strings/:string_value", deleteStringByValue);
+
 
 export default router;
