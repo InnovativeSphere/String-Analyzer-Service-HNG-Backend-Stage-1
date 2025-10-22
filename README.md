@@ -1,40 +1,41 @@
 # 🧠 String Analyzer Service — HNG Backend Stage 1
-A RESTful API service that analyzes strings and stores their computed properties.
-Built with **Node.js**, **Express**, and **ES Modules**, this service temporarily stores analyzed strings while the server runs.
+
+A RESTful API that analyzes strings and returns detailed computed properties.
+Built using **Node.js**, **Express**, and **ES Modules**, this service temporarily stores analyzed strings in memory while the server is running (no database required for Stage 1).
 
 ---
 
 ## 🚀 Features
 
-For each analyzed string, the API computes and returns the following:
+For every submitted string, the API computes and returns:
 
 | Property                    | Description                                              |
 | --------------------------- | -------------------------------------------------------- |
 | **length**                  | Number of characters in the string                       |
-| **is_palindrome**           | `true` if the string reads the same forward and backward |
+| **is_palindrome**           | `true` if the string reads the same backward and forward |
 | **unique_characters**       | Count of distinct characters                             |
 | **word_count**              | Number of words separated by whitespace                  |
-| **sha256_hash**             | Unique hash for identifying the string                   |
-| **character_frequency_map** | Object mapping each character to its count               |
+| **sha256_hash**             | Unique hash identifier for the string                    |
+| **character_frequency_map** | Object showing the frequency of each character           |
 
 ---
 
 ## ⚙️ Tech Stack
 
-- **Node.js** — Runtime environment
-- **Express.js** — Web framework
-- **Dotenv** — Environment variable management
-- **Nodemon** — Development server auto-restart
+* **Node.js** — JavaScript runtime
+* **Express.js** — Web framework
+* **Dotenv** — Environment variable loader
+* **Nodemon** — Dev server with live reload
 
 ---
 
-## 📦 Installation and Setup
+## 📦 Installation & Setup
 
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo-name>.git
-cd <your-repo-name>
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
 ```
 
 ### 2️⃣ Install Dependencies
@@ -43,7 +44,7 @@ cd <your-repo-name>
 npm install express dotenv nodemon
 ```
 
-### 3️⃣ Create a `.env` File
+### 3️⃣ Create `.env` File
 
 ```bash
 PORT=5000
@@ -51,30 +52,28 @@ PORT=5000
 
 ### 4️⃣ Run the Server
 
-Development mode (auto-restart):
+Development mode (auto restart):
 
 ```bash
 npm run dev
 ```
 
-or manual start:
+Manual start:
 
 ```bash
 node server.js
 ```
 
-The server runs at:
-👉 **[http://localhost:5000](http://localhost:5000)**
+Server runs at:
+👉 [http://localhost:5000](http://localhost:5000)
 
 ---
 
 ## 🧩 API Endpoints
 
-### 1️⃣ Create / Analyze a String
+### 1️⃣ **POST /strings** — Analyze a string
 
-**POST** `/strings`
-
-#### Request Body
+**Request Body:**
 
 ```json
 {
@@ -82,7 +81,8 @@ The server runs at:
 }
 ```
 
-#### Success Response — `201 Created`
+**Responses:**
+✅ `201 Created`
 
 ```json
 {
@@ -105,63 +105,45 @@ The server runs at:
 }
 ```
 
-### 2️⃣ Get a Specific String
-
-**GET** `/strings/:string_value`
-
-#### Example
-
-`GET http://localhost:5000/strings/racecar`
-
-#### Success Response — `200 OK`
-
-```json
-{
-  "id": "e00f9ef51a95f6e854862eed28dc0f1a68f154d9f75ddd841ab00de6ede9209b",
-  "value": "racecar",
-  "properties": {
-    /* ... */
-  },
-  "created_at": "2025-10-21T15:50:34.723Z"
-}
-```
-
-#### Error Response
-
-- `404` — String not found
+❌ `400` — Missing or invalid string
+❌ `409` — String already exists
 
 ---
 
-### 3️⃣ Get All Strings (with Filters)
+### 2️⃣ **GET /strings/:string_value** — Get a specific string
 
-**GET** `/strings`
+Example:
 
-#### Example Query
+```
+GET http://localhost:5000/strings/racecar
+```
+
+✅ `200 OK`
+Returns the stored string and its properties.
+❌ `404` — String not found
+
+---
+
+### 3️⃣ **GET /strings** — Retrieve all strings (with optional filters)
+
+Example Query:
 
 ```
 GET /strings?is_palindrome=true&min_length=5
 ```
 
-#### Success Response — `200 OK`
+✅ `200 OK`
 
 ```json
 {
   "data": [
     {
-      "id": "e00f9ef51a95f6e854862eed28dc0f1a68f154d9f75ddd841ab00de6ede9209b",
       "value": "racecar",
-      "properties": {
-        /* ... */
-      },
-      "created_at": "2025-10-21T15:58:45.899Z"
+      "properties": { "length": 7, "is_palindrome": true }
     },
     {
-      "id": "12e90b8e74f20fc0a7274cff9fcbae14592db12292757f1ea0d7503d30799fd2",
       "value": "poop",
-      "properties": {
-        /* ... */
-      },
-      "created_at": "2025-10-21T17:33:09.407Z"
+      "properties": { "length": 4, "is_palindrome": true }
     }
   ],
   "count": 2,
@@ -172,40 +154,93 @@ GET /strings?is_palindrome=true&min_length=5
 }
 ```
 
-#### Error Response
+---
 
-- `400` — Invalid query parameter(s)
+### 4️⃣ **DELETE /strings/:string_value** — Delete a stored string
 
-#### Success Response
+Example:
 
-`204 No Content`
+```
+DELETE http://localhost:5000/strings/racecar
+```
 
-#### Error Response
+✅ `200 OK`
 
-- `404` — String not found
+```json
+{
+  "message": "String deleted successfully.",
+  "deleted": {
+    "value": "racecar",
+    "id": "e00f9ef51a95..."
+  }
+}
+```
+
+❌ `404` — String not found
 
 ---
 
-## 🗄️ Data Persistence
+### 5️⃣ **GET /strings/filter-by-natural-language** — Filter using natural language
 
-- Strings are stored **temporarily in memory** (cleared when the server restarts).
-- No database used for Stage 1, per task requirements.
+Example:
+
+```
+GET /strings/filter-by-natural-language?query=strings that are palindrome and length greater than 3
+```
+
+✅ `200 OK`
+
+```json
+{
+  "data": [
+    { "value": "racecar", "properties": { "is_palindrome": true, "length": 7 } }
+  ],
+  "count": 1,
+  "query_interpreted": "strings that are palindrome and length greater than 3"
+}
+```
+
+❌ `400` — Missing or invalid query parameter
+
+---
+
+## 🗄️ Data Storage
+
+* Data is stored **temporarily in memory**.
+* It resets each time the server restarts.
+* No database connection required for this stage.
 
 ---
 
 ## 🧰 Project Structure
 
 ```
-📦 string-analyzer-api
+📦 string-analyzer-service
  ┣ 📂 controllers
  ┃ ┗ 📜 stringController.js
  ┣ 📂 routes
  ┃ ┗ 📜 stringRoutes.js
  ┣ 📜 server.js
  ┣ 📜 .env
+ ┣ 📜 .gitignore
  ┣ 📜 package.json
  ┗ 📜 README.md
 ```
+
+---
+
+## 🌐 Live Deployment
+
+✅ **Base URL (Railway):**
+**[https://string-analyzer-service-hng-backend-stage-1-production.up.railway.app](https://string-analyzer-service-hng-backend-stage-1-production.up.railway.app)**
+
+| Method | Endpoint                              | Example                                                                                           |
+| ------ | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| POST   | `/strings`                            | `/strings`                                                                                        |
+| GET    | `/strings/:string_value`              | `/strings/racecar`                                                                                |
+| GET    | `/strings`                            | `/strings?is_palindrome=true`                                                                     |
+| DELETE | `/strings/:string_value`              | `/strings/racecar`                                                                                |
+| GET    | `/strings/filter-by-natural-language` | `/strings/filter-by-natural-language?query=strings that are palindrome and length greater than 3` |
 
 ---
 
@@ -213,16 +248,26 @@ GET /strings?is_palindrome=true&min_length=5
 
 ```bash
 # Create a string
-curl -X POST http://localhost:5000/strings \
+curl -X POST https://string-analyzer-service-hng-backend-stage-1-production.up.railway.app/strings \
      -H "Content-Type: application/json" \
      -d '{"value":"racecar"}'
 
-# Get all palindromic strings longer than 5 characters
-curl "http://localhost:5000/strings?is_palindrome=true&min_length=5"
+# Fetch all strings that are palindromes
+curl "https://string-analyzer-service-hng-backend-stage-1-production.up.railway.app/strings?is_palindrome=true"
+
+# Natural language query
+curl "https://string-analyzer-service-hng-backend-stage-1-production.up.railway.app/strings/filter-by-natural-language?query=strings that are palindrome and length greater than 3"
+
+# Delete a string
+curl -X DELETE https://string-analyzer-service-hng-backend-stage-1-production.up.railway.app/strings/racecar
 ```
+
+---
 
 ## 👤 Author
 
 **Name:** Salim Sambo
-**Email:** 004sas@gmail.com
-**HNG-13 — Backend Wizards Stage 1**
+**Email:** [004sas@gmail.com](mailto:004sas@gmail.com)
+**Track:** Backend (Node.js)
+**Stage:** HNG 13 — Stage 1
+
